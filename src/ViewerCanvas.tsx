@@ -1,11 +1,6 @@
 import * as React from 'react'
 import Loading from './Loading'
-import classnames from 'classnames'
-import { Document, Page, pdfjs } from 'react-pdf'
-import 'react-pdf/dist/umd/Page/AnnotationLayer.css'
-import PdfjsWorker from './pdf.worker.entry'
-
-pdfjs.GlobalWorkerOptions.workerPort = new PdfjsWorker()
+import ViewerPDF from './ViewerPDF'
 
 export interface ViewerCanvasProps {
   prefixCls: string
@@ -29,6 +24,7 @@ export interface ViewerCanvasProps {
   loading: boolean
   drag: boolean
   container: HTMLElement
+  setPDFLoading: (loading: boolean) => void
   onCanvasMouseDown: (e: React.MouseEvent<HTMLDivElement>) => void
 }
 
@@ -38,10 +34,7 @@ export interface ViewerCanvasState {
   mouseY?: number
 }
 
-const ViewerCanvas = (
-  props: ViewerCanvasProps,
-  printRef: React.MutableRefObject<HTMLImageElement>,
-) => {
+const ViewerCanvas = (props: ViewerCanvasProps, printRef) => {
   const isMouseDown = React.useRef(false)
   const prePosition = React.useRef({
     x: 0,
@@ -150,71 +143,21 @@ const ViewerCanvas = (
     document[funcName]('mousemove', handleMouseMove, false)
   }
 
-  const imgStyle: React.CSSProperties = {
-    width: `${props.width}px`,
-    height: `${props.height}px`,
-    transform: `
-translateX(${props.left !== null ? props.left + 'px' : 'aoto'}) translateY(${
-      props.top
-    }px)
-    rotate(${props.rotate}deg) scaleX(${props.scaleX}) scaleY(${props.scaleY})`,
-  }
-
-  const imgClass = classnames(`${props.prefixCls}-image`, {
-    drag: props.drag,
-    [`${props.prefixCls}-image-transition`]: !isMouseDown.current,
-  })
-
   const style = {
     zIndex: props.zIndex,
   }
 
   let imgNode = null
 
-  const [totalPages, settotalPages] = React.useState(1)
-
-  const onDocumentLoadSuccess = ({ numPages }) => {
-    settotalPages(numPages)
-  }
-
-  const options = {
-    cMapUrl: 'cmaps/',
-    cMapPacked: true,
-  }
-
   if (props.imgSrc !== '') {
-    props.imgSrc.endsWith('.pdf')
-      ? (imgNode = (
-          <Document
-            className={imgClass}
-            file={props.imgSrc}
-            options={options}
-            style={imgStyle}
-            onLoadSuccess={onDocumentLoadSuccess}
-          >
-            <div ref={printRef}>
-              {new Array(totalPages).fill('').map((_, index) => {
-                return (
-                  <Page
-                    renderTextLayer={false}
-                    key={index}
-                    pageNumber={index + 1}
-                    style={{ display: 'none' }}
-                  />
-                )
-              })}
-            </div>
-          </Document>
-        ))
-      : (imgNode = (
-          <img
-            ref={printRef}
-            className={imgClass}
-            src={props.imgSrc}
-            style={imgStyle}
-            onMouseDown={handleMouseDown}
-          />
-        ))
+    imgNode = (
+      <ViewerPDF
+        ref={printRef}
+        handleMouseDown={handleMouseDown}
+        isMouseDown={isMouseDown}
+        {...props}
+      />
+    )
   }
   if (props.loading) {
     imgNode = (

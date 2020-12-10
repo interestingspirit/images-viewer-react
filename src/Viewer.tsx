@@ -3,7 +3,14 @@ import * as ReactDOM from 'react-dom'
 import ViewerCore from './ViewerCore'
 import ViewerProps from './ViewerProps'
 
-const Viewer = (props: ViewerProps): React.ReactElement => {
+export interface ViewerRef {
+  toPrint: () => void
+}
+
+const Viewer = (
+  props: ViewerProps,
+  viewerRef: React.MutableRefObject<ViewerRef>,
+): React.ReactElement => {
   const defaultContainer = React.useRef(
     typeof document !== 'undefined' ? document.createElement('div') : null,
   )
@@ -31,7 +38,10 @@ const Viewer = (props: ViewerProps): React.ReactElement => {
   if (!init) {
     return null
   }
-  return ReactDOM.createPortal(<ViewerCore {...props} />, container)
+  return ReactDOM.createPortal(
+    <ViewerCore ref={viewerRef} {...props} />,
+    container,
+  )
 }
 
-export default Viewer
+export default React.forwardRef(Viewer)

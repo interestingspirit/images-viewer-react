@@ -53,10 +53,19 @@
   &-btn {
     background-color: @btn-background-color;
     color: white;
+
+    &.disable {
+      cursor: not-allowed;
+      background-color: rgba(0, 0, 0, 0.25);
+    }
   }
 
   &-btn:hover {
     background-color: @btn-hover-background-color;
+
+    &.disable:hover {
+      background-color: rgba(0, 0, 0, 0.25);
+    }
   }
 
   &-close {
@@ -183,10 +192,12 @@
   }
 
   &-list > li > img {
-    width: @viewer-list-item-img-width;
+    // width: @viewer-list-item-img-width;
     height: @viewer-list-item-height;
     margin-left: @viewer-list-item-img-marginLeft;
     opacity: 0.5;
+    margin: 0 auto;
+    display: block;
     // background-color: #fff;
   }
 
@@ -303,17 +314,32 @@
   padding: 25px 0;
   align-items: center;
   display: flex;
+
+  & .disable {
+    cursor: not-allowed;
+    background-color: rgba(0, 0, 0, 0.01);
+  }
   .preButton {
     display: block;
     width: 40px;
     float: left;
     cursor: pointer;
+
+    &.disable {
+      cursor: not-allowed;
+      background-color: rgba(0, 0, 0, 0.01);
+    }
   }
   .nextButton {
     display: block;
     width: 40px;
     float: right;
     cursor: pointer;
+
+    &.disable {
+      cursor: not-allowed;
+      background-color: rgba(0, 0, 0, 0.01);
+    }
   }
   .preSpan {
     padding: 20px;
@@ -354,11 +380,24 @@
 }
 .react-pdf__Document {
   width: calc(100% - 10px);
-  height: calc(100% - 100px);
+  height: calc(100% - 150px);
   overflow: auto;
   border: 1px solid #f1f1f1;
   margin: 5px auto;
 }
 .react-pdf__Page__canvas {
   margin: 0 auto;
+}
+@media print {
+  .print-container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    .images-viewer-react-image.drag {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) !important;
+    }
+  }
 }

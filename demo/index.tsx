@@ -3,14 +3,15 @@ import * as ReactDOM from 'react-dom'
 import Viewer from '../src/Viewer'
 import Failed from './images/failed.png'
 import PDF from './images/pdf.png'
+import imgpdf from './images/image.pdf'
 import img from './images/image.pdf'
-// import img1 from './images/100.pdf'
-// const img1 = require('./images/image1.jpg');
+import img1 from './images/100.pdf'
 import img2 from './images/image2.jpg'
 import img3 from './images/image3.jpg'
 import img4 from './images/image4.jpg'
 import img5 from './images/image5.jpg'
 import img6 from './images/image6.jpg'
+import img7 from './images/image7.jpg'
 import './index.less'
 import classNames from 'classnames'
 import { Button, List, Checkbox } from 'antd'
@@ -138,19 +139,12 @@ class App extends React.Component<unknown, Partial<State>> {
       nextPageNo: 5,
       images: [
         {
-          navSrc: Failed,
-          src: '',
-          fileType: 'jpg',
+          navSrc: imgpdf,
+          src: imgpdf,
+          fileType: 'pdf',
           alt: 'lake',
           downloadUrl:
             'https://infeng.github.io/react-viewer/59111ff2c38954887bc313887fe76e27.jpg',
-        },
-        {
-          navSrc: img2,
-          src: img2,
-          fileType: 'jpg',
-          alt: 'mountain',
-          downloadUrl: '',
         },
         {
           navSrc: img,
@@ -159,13 +153,20 @@ class App extends React.Component<unknown, Partial<State>> {
           alt: '',
           downloadUrl: '',
         },
-        // {
-        //   navSrc: img1,
-        //   src: img1,
-        //   fileType: 'pdf',
-        //   alt: '',
-        //   downloadUrl: '',
-        // },
+        {
+          navSrc: img1,
+          src: img1,
+          fileType: 'pdf',
+          alt: '',
+          downloadUrl: '',
+        },
+        {
+          navSrc: img2,
+          src: img2,
+          fileType: 'jpg',
+          alt: '',
+          downloadUrl: '',
+        },
         {
           navSrc: img3,
           src: img3,
@@ -191,6 +192,13 @@ class App extends React.Component<unknown, Partial<State>> {
           navSrc: img6,
           src: img6,
           fileType: 'docx',
+          alt: '',
+          downloadUrl: '',
+        },
+        {
+          navSrc: img7,
+          src: img7,
+          fileType: 'jpg',
           alt: '',
           downloadUrl: '',
         },

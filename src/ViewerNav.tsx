@@ -1,12 +1,13 @@
 // import { SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS } from 'constants';
 import * as React from 'react'
+import classnames from 'classnames'
 import { ImageDecorator } from './ViewerProps'
-import PDF from './images/pdf@2x.png'
-import FAILED from './images/failed.png'
-import ArrowLeft from './images/arrow-left.png'
-import ArrowRight from './images/arrow-right.png'
-import EXCEL from './images/excel@2x.png'
-import WORD from './images/word@2x.png'
+const PDF = require('./images/pdf@2x.png')
+const FAILED = require('./images/failed.png')
+const ArrowLeft = require('./images/arrow-left.png')
+const ArrowRight = require('./images/arrow-right.png')
+const EXCEL = require('./images/excel@2x.png')
+const WORD = require('./images/word@2x.png')
 
 export interface ViewerNavProps {
   prefixCls: string
@@ -16,6 +17,7 @@ export interface ViewerNavProps {
   onPreButton?: (activeIndex: number) => Promise<number>
   onNextButton?: (activeIndex: number) => Promise<number>
   onChangeImg: (index: number) => void
+  loadingPDF?: boolean
 }
 
 const ViewerNav = (props: ViewerNavProps): React.ReactElement => {
@@ -40,7 +42,6 @@ const ViewerNav = (props: ViewerNavProps): React.ReactElement => {
   })
 
   React.useEffect(() => {
-    console.log(preActiveIndex)
     fetchData(activeIndex)
     move()
     preActiveIndex.current = activeIndex
@@ -123,19 +124,25 @@ const ViewerNav = (props: ViewerNavProps): React.ReactElement => {
   }
 
   function handleChangeImg(newIndex) {
-    if (activeIndex === newIndex) {
+    if (activeIndex === newIndex || props.loadingPDF) {
       return
     }
     props.onChangeImg(newIndex)
   }
 
   function goNext() {
+    if (props.loadingPDF) {
+      return
+    }
     if (activeIndex + 1 <= props.images.length) {
       fetchData(activeIndex + 1)
     }
   }
 
   function goPre() {
+    if (props.loadingPDF) {
+      return
+    }
     if (activeIndex >= 1) {
       fetchData(activeIndex - 1)
     }
@@ -149,13 +156,16 @@ const ViewerNav = (props: ViewerNavProps): React.ReactElement => {
     width: navImgWidth,
   }
 
+  const title = props.loadingPDF ? '数据加载中，请稍后...' : ''
+
   return (
     <div className={`${props.prefixCls}-navbar divContainer`}>
       {marginValue ? (
         <img
           src={ArrowLeft}
           alt=''
-          className='preButton'
+          title={title}
+          className={classnames('preButton', { disable: props.loadingPDF })}
           onClick={() => goPre()}
         />
       ) : (
@@ -176,7 +186,11 @@ const ViewerNav = (props: ViewerNavProps): React.ReactElement => {
           {props.images.map((item, index) => (
             <li
               key={index}
-              className={index === activeIndex ? 'active' : ''}
+              title={title}
+              className={classnames({
+                active: index === activeIndex,
+                disable: props.loadingPDF,
+              })}
               style={liStyle}
               onClick={() => {
                 handleChangeImg(index)
@@ -193,7 +207,6 @@ const ViewerNav = (props: ViewerNavProps): React.ReactElement => {
                     : item.navSrc || FAILED
                 }
                 alt={item.alt}
-                style={{ width: navImgWidth }}
               />
             </li>
           ))}
@@ -203,7 +216,8 @@ const ViewerNav = (props: ViewerNavProps): React.ReactElement => {
         <img
           src={ArrowRight}
           alt=''
-          className='nextButton'
+          title={title}
+          className={classnames('nextButton', { disable: props.loadingPDF })}
           onClick={() => goNext()}
         />
       ) : (

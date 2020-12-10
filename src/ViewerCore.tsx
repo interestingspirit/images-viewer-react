@@ -7,7 +7,7 @@ import ViewerProps, { ImageDecorator, ToolbarConfig } from './ViewerProps'
 import Icon, { ActionType } from './Icon'
 import * as constants from './constants'
 import classnames from 'classnames'
-import { useReactToPrint } from 'react-to-print'
+import { ViewerRef } from './Viewer'
 
 const noop = () => ({})
 
@@ -18,6 +18,7 @@ const ACTION_TYPES = {
   setActiveIndex: 'setActiveIndex',
   update: 'update',
   clear: 'clear',
+  setPDFLoading: 'setPDFLoading',
 }
 
 function createAction(type, payload) {
@@ -44,9 +45,13 @@ export interface ViewerCoreState {
   loading?: boolean
   loadFailed?: boolean
   startLoading: boolean
+  loadingPDF: boolean
 }
 
-const ViewerCore = (props: ViewerProps): React.ReactElement => {
+const ViewerCore = (
+  props: ViewerProps,
+  viewerRef: React.MutableRefObject<ViewerRef>,
+) => {
   const {
     visible = false,
     onClose = noop,
@@ -94,7 +99,9 @@ const ViewerCore = (props: ViewerProps): React.ReactElement => {
     loading: false,
     loadFailed: false,
     startLoading: false,
+    loadingPDF: false,
   }
+
   function setContainerWidthHeight() {
     let width = window.innerWidth
     let height = window.innerHeight
@@ -142,6 +149,11 @@ const ViewerCore = (props: ViewerProps): React.ReactElement => {
           left: 0,
           loading: false,
         }
+      case ACTION_TYPES.setPDFLoading:
+        return {
+          ...s,
+          loadingPDF: action.payload,
+        }
       default:
         break
     }
@@ -151,14 +163,18 @@ const ViewerCore = (props: ViewerProps): React.ReactElement => {
   const viewerCore = React.useRef<HTMLDivElement>(null)
   const init = React.useRef(false)
   const currentLoadIndex = React.useRef(0)
-  const printRef = React.useRef(null)
   const [state, dispatch] = React.useReducer<
     (s: ViewerCoreState, a: unknown) => ViewerCoreState
   >(reducer, initialState)
 
-  const reactToPrint = useReactToPrint({
-    content: () => printRef.current,
-  })
+  const printRef = viewerRef ? viewerRef : React.useRef(null)
+
+  const setPDFLoading = (loading: boolean) => {
+    dispatch({
+      type: ACTION_TYPES.setPDFLoading,
+      payload: loading,
+    })
+  }
 
   React.useEffect(() => {
     init.current = true
@@ -230,6 +246,16 @@ const ViewerCore = (props: ViewerProps): React.ReactElement => {
     let activeImage: ImageDecorator = null
     if (images.length > 0) {
       activeImage = images[currentActiveIndex]
+    }
+    if (activeImage && activeImage.src.endsWith('.pdf')) {
+      dispatch(
+        createAction(ACTION_TYPES.update, {
+          loading: false,
+          loadFailed: false,
+          startLoading: false,
+        }),
+      )
+      return
     }
     let loadComplete = false
     const img = new Image()
@@ -351,18 +377,23 @@ const ViewerCore = (props: ViewerProps): React.ReactElement => {
     if (newIndex < 0) {
       newIndex = images.length - 1
     }
-    if (newIndex === state.activeIndex) {
+    if (newIndex === state.activeIndex || state.loadingPDF) {
       return
     }
     if (props.onChange) {
       const activeImage = getActiveImage(newIndex)
       props.onChange(activeImage, newIndex)
     }
+
     dispatch(
       createAction(ACTION_TYPES.setActiveIndex, {
         index: newIndex,
       }),
     )
+    // setPDFLoading(true);
+    // setTimeout(() => {
+    //   setPDFLoading(false);
+    // }, 1000);
   }
 
   function getActiveImage(activeIndex2 = undefined) {
@@ -388,8 +419,7 @@ const ViewerCore = (props: ViewerProps): React.ReactElement => {
   }
 
   function handlePrint() {
-    console.log(printRef)
-    reactToPrint()
+    printRef.current?.toPrint()
   }
 
   function handleDownload() {
@@ -750,6 +780,7 @@ const ViewerCore = (props: ViewerProps): React.ReactElement => {
         loading={state.loading}
         drag={drag}
         container={props.container}
+        setPDFLoading={setPDFLoading}
         onCanvasMouseDown={handleCanvasMouseDown}
       />
       {props.noFooter || (
@@ -773,6 +804,7 @@ const ViewerCore = (props: ViewerProps): React.ReactElement => {
               activeIndex={state.activeIndex}
               count={images.length}
               showTotal={showTotal}
+              loadingPDF={state.loadingPDF}
             />
           )}
           {props.noNavbar || (
@@ -784,6 +816,7 @@ const ViewerCore = (props: ViewerProps): React.ReactElement => {
               onPreButton={props.onPreButton}
               onNextButton={props.onNextButton}
               navImgWidth={navImgWidth}
+              loadingPDF={state.loadingPDF}
             />
           )}
         </div>
@@ -792,4 +825,4 @@ const ViewerCore = (props: ViewerProps): React.ReactElement => {
   )
 }
 
-export default ViewerCore
+export default React.forwardRef(ViewerCore)
