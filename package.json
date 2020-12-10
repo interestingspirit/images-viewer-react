@@ -6,14 +6,16 @@
   "scripts": {
     "test": "jest",
     "start": "webpack-dev-server",
-    "lint": "tslint -c tslint.json \"src/**/*.ts\" \"src/**/*.tsx\"",
+    "lint": "eslint --ext .js,.ts,.jsx,.tsx src",
+    "lint:fix": "eslint --ext .js,.ts,.jsx,.tsx src --fix",
     "build": "webpack --config webpack.config.prop.js && gulp",
     "build:analyze": "ANALYZE=true webpack --config webpack.config.prop.js",
     "doc": "webpack --config webpack.config.doc.js",
     "pub": "npm run build && npm publish",
     "prepublish": "npm run build",
     "predeploy": "npm run doc",
-    "deploy": "gh-pages -d pages-build"
+    "deploy": "gh-pages -d pages-build",
+    "cz": "cz"
   },
   "repository": {
     "type": "git",
@@ -36,42 +38,53 @@
   "typings": "lib/index.d.ts",
   "homepage": "https://github.com/candy-girl/images-viewer-react/#readme",
   "devDependencies": {
-    "@babel/core": "^7.6.4",
+    "@babel/core": "^7.12.10",
     "@babel/plugin-proposal-object-rest-spread": "^7.6.2",
     "@babel/plugin-transform-object-assign": "^7.2.0",
-    "@babel/preset-env": "^7.6.3",
-    "@babel/preset-react": "^7.6.3",
+    "@babel/preset-env": "^7.12.10",
+    "@babel/preset-react": "^7.12.7",
+    "@commitlint/cli": "^11.0.0",
+    "@commitlint/config-conventional": "^11.0.0",
     "@types/jest": "^23.3.1",
-    "@types/node": "^12.11.1",
-    "@types/react": "^16.9.1",
-    "@types/react-dom": "^16.8.5",
+    "@types/node": "^12.19.8",
+    "@types/react": "^16.14.2",
+    "@types/react-dom": "^16.9.10",
+    "@typescript-eslint/eslint-plugin": "^4.9.1",
+    "@typescript-eslint/parser": "^4.9.1",
     "antd": "^3.24.1",
     "autoprefixer": "^9.6.5",
     "babel-jest": "^23.4.2",
-    "babel-loader": "^8.0.6",
-    "babel-plugin-import": "^1.2.1",
-    "copy-webpack-plugin": "^6.3.2",
+    "babel-loader": "^8.2.2",
+    "babel-plugin-import": "^1.13.3",
+    "commitizen": "^4.2.2",
     "css-loader": "^3.2.0",
+    "cz-conventional-changelog": "3.3.0",
     "enzyme": "^3.10.0",
     "enzyme-adapter-react-16": "^1.14.0",
     "enzyme-to-json": "^3.3.4",
+    "eslint": "^7.15.0",
+    "eslint-config-prettier": "^7.0.0",
+    "eslint-plugin-prettier": "^3.2.0",
+    "eslint-plugin-react": "^7.21.5",
     "file-loader": "^4.2.0",
     "fs-extra": "^8.1.0",
     "gh-pages": "^2.1.1",
     "gulp": "^4.0.2",
     "gulp-typescript": "^5.0.1",
     "html-webpack-plugin": "^3.2.0",
+    "husky": "^4.3.5",
     "identity-obj-proxy": "^3.0.0",
-    "jest": "^26.6.1",
+    "jest": "^26.6.3",
     "jest-environment-jsdom": "^23.4.0",
     "jest-environment-jsdom-global": "^1.1.0",
     "jest-static-stubs": "0.0.1",
     "less": "^3.10.3",
     "less-loader": "^5.0.0",
+    "lint-staged": "^10.5.3",
     "merge2": "^1.3.0",
     "mini-css-extract-plugin": "^0.9.0",
     "postcss-loader": "^3.0.0",
-    "pre-commit": "^1.1.3",
+    "prettier": "^2.2.1",
     "react": "^16.10.2",
     "react-dom": "^16.10.2",
     "react-test-render": "^1.1.1",
@@ -79,7 +92,6 @@
     "through2": "^2.0.1",
     "ts-jest": "^23.1.3",
     "ts-loader": "^6.2.0",
-    "tslint": "^5.18.0",
     "typescript": "^3.9.7",
     "url-loader": "^2.2.0",
     "webpack": "^4.41.2",
@@ -94,9 +106,11 @@
     "react-pdf": "^5.0.0",
     "react-to-print": "^2.12.0"
   },
-  "pre-commit": [
-    "lint"
-  ],
+  "lint-staged": {
+    "*.{js,ts,jsx,tsx}": [
+      "npm run lint:fix"
+    ]
+  },
   "jest": {
     "transform": {
       "^.+\\.tsx?$": "ts-jest",
@@ -127,5 +141,10 @@
     },
     "coverageDirectory": "./coverage/",
     "collectCoverage": true
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
   }
 }

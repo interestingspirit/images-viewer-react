@@ -1,109 +1,122 @@
-import * as React from 'react';
-import Loading from './Loading';
-import classnames from 'classnames';
-import { Document, Page, pdfjs } from 'react-pdf';
-import 'react-pdf/dist/umd/Page/AnnotationLayer.css';
-import PdfjsWorker from './pdf.worker.entry';
+import * as React from 'react'
+import Loading from './Loading'
+import classnames from 'classnames'
+import { Document, Page, pdfjs } from 'react-pdf'
+import 'react-pdf/dist/umd/Page/AnnotationLayer.css'
+import PdfjsWorker from './pdf.worker.entry'
 
-pdfjs.GlobalWorkerOptions.workerPort = new PdfjsWorker();
+pdfjs.GlobalWorkerOptions.workerPort = new PdfjsWorker()
 
 export interface ViewerCanvasProps {
-  prefixCls: string;
-  imgSrc: string;
-  visible: boolean;
-  width: number;
-  height: number;
-  top: number;
-  left: number;
-  rotate: number;
-  onChangeImgState: (width: number, height: number, top: number, left: number) => void;
-  onResize: () => void;
-  zIndex: number;
-  scaleX: number;
-  scaleY: number;
-  loading: boolean;
-  drag: boolean;
-  container: HTMLElement;
-  onCanvasMouseDown: (e: React.MouseEvent<HTMLDivElement>) => void;
+  prefixCls: string
+  imgSrc: string
+  visible: boolean
+  width: number
+  height: number
+  top: number
+  left: number
+  rotate: number
+  onChangeImgState: (
+    width: number,
+    height: number,
+    top: number,
+    left: number,
+  ) => void
+  onResize: () => void
+  zIndex: number
+  scaleX: number
+  scaleY: number
+  loading: boolean
+  drag: boolean
+  container: HTMLElement
+  onCanvasMouseDown: (e: React.MouseEvent<HTMLDivElement>) => void
 }
 
 export interface ViewerCanvasState {
-  isMouseDown?: boolean;
-  mouseX?: number;
-  mouseY?: number;
+  isMouseDown?: boolean
+  mouseX?: number
+  mouseY?: number
 }
 
-const ViewerCanvas = (props: ViewerCanvasProps, printRef: React.MutableRefObject<HTMLImageElement>) => {
-  const isMouseDown = React.useRef(false);
+const ViewerCanvas = (
+  props: ViewerCanvasProps,
+  printRef: React.MutableRefObject<HTMLImageElement>,
+) => {
+  const isMouseDown = React.useRef(false)
   const prePosition = React.useRef({
     x: 0,
     y: 0,
-  });
+  })
   const [position, setPosition] = React.useState({
     x: 0,
     y: 0,
-  });
+  })
 
   React.useEffect(() => {
     return () => {
-      bindEvent(true);
-      bindWindowResizeEvent(true);
-    };
-  }, []);
+      bindEvent(true)
+      bindWindowResizeEvent(true)
+    }
+  }, [])
 
   React.useEffect(() => {
-    bindWindowResizeEvent();
+    bindWindowResizeEvent()
 
     return () => {
-      bindWindowResizeEvent(true);
-    };
-  });
+      bindWindowResizeEvent(true)
+    }
+  })
 
   React.useEffect(() => {
     if (props.visible && props.drag) {
-      bindEvent();
+      bindEvent()
     }
     if (!props.visible && props.drag) {
-      handleMouseUp({});
+      handleMouseUp()
     }
     return () => {
-      bindEvent(true);
-    };
-  }, [props.drag, props.visible]);
+      bindEvent(true)
+    }
+  }, [props.drag, props.visible])
 
   React.useEffect(() => {
-    let diffX = position.x - prePosition.current.x;
-    let diffY = position.y - prePosition.current.y;
+    const diffX = position.x - prePosition.current.x
+    const diffY = position.y - prePosition.current.y
     prePosition.current = {
       x: position.x,
       y: position.y,
-    };
-    props.onChangeImgState(props.width, props.height, props.top + diffY, props.left + diffX);
-  }, [position]);
+    }
+    props.onChangeImgState(
+      props.width,
+      props.height,
+      props.top + diffY,
+      props.left + diffX,
+    )
+  }, [position])
 
-  function handleResize(e) {
-    props.onResize();
+  function handleResize() {
+    props.onResize()
   }
 
   function handleCanvasMouseDown(e) {
-    props.onCanvasMouseDown(e);
-    handleMouseDown(e);
+    props.onCanvasMouseDown(e)
+    handleMouseDown(e)
   }
 
   function handleMouseDown(e) {
     if (e.button !== 0) {
-      return;
+      return
     }
     if (!props.visible || !props.drag) {
-      return;
+      return
     }
-    e.preventDefault();
-    e.stopPropagation();
-    isMouseDown.current = true;
+    e.preventDefault()
+    e.stopPropagation()
+    isMouseDown.current = true
     prePosition.current = {
       x: e.nativeEvent.clientX,
       y: e.nativeEvent.clientY,
-    };
+    }
   }
 
   const handleMouseMove = (e) => {
@@ -111,84 +124,97 @@ const ViewerCanvas = (props: ViewerCanvasProps, printRef: React.MutableRefObject
       setPosition({
         x: e.clientX,
         y: e.clientY,
-      });
+      })
     }
-  };
+  }
 
-  function handleMouseUp(e) {
-    isMouseDown.current = false;
+  function handleMouseUp() {
+    isMouseDown.current = false
   }
 
   function bindWindowResizeEvent(remove?: boolean) {
-    let funcName = 'addEventListener';
+    let funcName = 'addEventListener'
     if (remove) {
-      funcName = 'removeEventListener';
+      funcName = 'removeEventListener'
     }
-    window[funcName]('resize', handleResize, false);
+    window[funcName]('resize', handleResize, false)
   }
 
   function bindEvent(remove?: boolean) {
-    let funcName = 'addEventListener';
+    let funcName = 'addEventListener'
     if (remove) {
-      funcName = 'removeEventListener';
+      funcName = 'removeEventListener'
     }
 
-    document[funcName]('click', handleMouseUp, false);
-    document[funcName]('mousemove', handleMouseMove, false);
+    document[funcName]('click', handleMouseUp, false)
+    document[funcName]('mousemove', handleMouseMove, false)
   }
 
-  let imgStyle: React.CSSProperties = {
+  const imgStyle: React.CSSProperties = {
     width: `${props.width}px`,
     height: `${props.height}px`,
     transform: `
-translateX(${props.left !== null ? props.left + 'px' : 'aoto'}) translateY(${props.top}px)
+translateX(${props.left !== null ? props.left + 'px' : 'aoto'}) translateY(${
+      props.top
+    }px)
     rotate(${props.rotate}deg) scaleX(${props.scaleX}) scaleY(${props.scaleY})`,
-  };
+  }
 
   const imgClass = classnames(`${props.prefixCls}-image`, {
     drag: props.drag,
     [`${props.prefixCls}-image-transition`]: !isMouseDown.current,
-  });
+  })
 
-  let style = {
+  const style = {
     zIndex: props.zIndex,
-  };
+  }
 
-  let imgNode = null;
+  let imgNode = null
 
-  const [totalPages, settotalPages] = React.useState(1);
+  const [totalPages, settotalPages] = React.useState(1)
 
   const onDocumentLoadSuccess = ({ numPages }) => {
-    settotalPages(numPages);
-  };
+    settotalPages(numPages)
+  }
 
   const options = {
     cMapUrl: 'cmaps/',
     cMapPacked: true,
-  };
+  }
 
   if (props.imgSrc !== '') {
-    props.imgSrc.endsWith('.pdf') ? imgNode = <Document
-      className={imgClass}
-      file={props.imgSrc}
-      options={options}
-      style={imgStyle}
-      onLoadSuccess={onDocumentLoadSuccess}
-    >
-      <div ref={printRef}>
-        {
-          new Array(totalPages).fill('').map((_, index) => {
-            return <Page renderTextLayer={false} key={index} pageNumber={index + 1} style={{display: 'none'}} />;
-          })
-        }
-      </div>
-    </Document> : imgNode = <img
-      ref={printRef}
-      className={imgClass}
-      src={props.imgSrc}
-      style={imgStyle}
-      onMouseDown={handleMouseDown}
-    />;
+    props.imgSrc.endsWith('.pdf')
+      ? (imgNode = (
+          <Document
+            className={imgClass}
+            file={props.imgSrc}
+            options={options}
+            style={imgStyle}
+            onLoadSuccess={onDocumentLoadSuccess}
+          >
+            <div ref={printRef}>
+              {new Array(totalPages).fill('').map((_, index) => {
+                return (
+                  <Page
+                    renderTextLayer={false}
+                    key={index}
+                    pageNumber={index + 1}
+                    style={{ display: 'none' }}
+                  />
+                )
+              })}
+            </div>
+          </Document>
+        ))
+      : (imgNode = (
+          <img
+            ref={printRef}
+            className={imgClass}
+            src={props.imgSrc}
+            style={imgStyle}
+            onMouseDown={handleMouseDown}
+          />
+        ))
   }
   if (props.loading) {
     imgNode = (
@@ -202,7 +228,7 @@ translateX(${props.left !== null ? props.left + 'px' : 'aoto'}) translateY(${pro
       >
         <Loading />
       </div>
-    );
+    )
   }
 
   return (
@@ -213,7 +239,7 @@ translateX(${props.left !== null ? props.left + 'px' : 'aoto'}) translateY(${pro
     >
       {imgNode}
     </div>
-  );
-};
+  )
+}
 
-export default React.forwardRef(ViewerCanvas);
+export default React.forwardRef(ViewerCanvas)
