@@ -227,6 +227,13 @@ export default React.forwardRef((props: ViewerProps, viewerRef: React.MutableRef
     }
   }, [activeIndex, visible, images]);
 
+  // 删除图片后重新加载
+  React.useEffect(() => {
+    if (images.length > 0) {
+      loadImg(state.activeIndex);
+    }
+  }, [images.length]);
+
   function loadImg(currentActiveIndex, isReset = false) {
     dispatch(createAction(ACTION_TYPES.update, {
       loading: true,
@@ -371,10 +378,6 @@ export default React.forwardRef((props: ViewerProps, viewerRef: React.MutableRef
     dispatch(createAction(ACTION_TYPES.setActiveIndex, {
       index: newIndex,
     }));
-    // setPDFLoading(true);
-    // setTimeout(() => {
-    //   setPDFLoading(false);
-    // }, 1000);
   }
 
   function getActiveImage(activeIndex2 = undefined) {

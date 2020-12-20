@@ -27,37 +27,63 @@ export default function ViewerNav(props: ViewerNavProps) {
   const ulRef = React.useRef();
   const [showNext, setShowNext] = React.useState(false);
   const preActiveIndex = React.useRef(activeIndex);
+  const [limit, setLimit] = React.useState(0);
 
   React.useEffect(() => {
     // 删除图片后的位移
-    const deleteMarginValue = activeIndex > 5 ? - ( activeIndex - 5 ) * ( navImgWidth + 10 ) : 0;
-    setMarginValue(deleteMarginValue);
-    setTimeout(() => {
-      let ulContainer = ulRef.current || undefined;
-      let ulWidth = ulContainer.clientWidth;
+    if (limit > 0) {
+      const deleteMarginValue = activeIndex > (limit - 1) ? - ( activeIndex - (limit - 1) ) * ( navImgWidth + 10 ) : 0;
+      setMarginValue(deleteMarginValue);
+    }
+  }, [images.length, limit]);
+
+  React.useEffect(() => {
+    const ulContainer = ulRef.current;
+    if (ulContainer) {
+      let ulWidth = (ulContainer as HTMLDivElement).clientWidth;
       const showNextButton = (navImgWidth + 10) * images.length + marginValue - 5 > ulWidth;
       if (showNextButton) {
         setShowNext(true);
       } else {
         setShowNext(false);
       }
-    }, 0);
-  });
+    }
+  }, [ulRef.current, marginValue, images.length, limit]);
+
+  const calculateLimit = () => {
+    if (ulRef.current) {
+      const itemOffset = navImgWidth + 5;
+      const { width } = (ulRef.current as HTMLDivElement).getBoundingClientRect();
+      setLimit(Math.floor(width / itemOffset));
+    }
+  };
 
   React.useEffect(() => {
-    fetchData(activeIndex);
-    move();
-    preActiveIndex.current = activeIndex;
-  }, [activeIndex]);
+    calculateLimit();
+    window.addEventListener('resize', calculateLimit, false);
+    return () => {
+      window.removeEventListener('resize', calculateLimit, false);
+    };
+  }, []);
+
+  React.useEffect(() => {
+    if (limit > 0) {
+      fetchData(activeIndex);
+      move();
+      preActiveIndex.current = activeIndex;
+    }
+  }, [activeIndex, limit, images.length]);
 
   function move() {
-    if (images.length <= 6) {
+    if (images.length <= limit) {
       return;
     }
     // 移动缩略图
     const itemOffset = navImgWidth + 10;
+    // 显示区最左边
     const leftIndex = -marginValue / itemOffset;
-    const rightIndex = leftIndex + 5;
+    // 显示区右边
+    const rightIndex = leftIndex + limit - 1;
     let currentValue = marginValue;
     if (activeIndex < preActiveIndex.current) {
       // 左移
@@ -74,7 +100,7 @@ export default function ViewerNav(props: ViewerNavProps) {
       // 右移
       if (activeIndex === images.length - 1 && preActiveIndex.current === 0) {
         // 从第一张跳到最后一张
-        currentValue = - (images.length - 5) * itemOffset;
+        currentValue = - (images.length - limit) * itemOffset;
       } else if (activeIndex === rightIndex + 1) {
         // 边界右移1
         currentValue -= itemOffset;
